@@ -19,6 +19,7 @@ Dungeons and Dragons runs great with 3 buddies !
 
 Make with :
 ```shell
+sudo apt-get install libasound2-dev
 make
 ```
 
