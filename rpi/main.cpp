@@ -94,7 +94,25 @@ void generate_gamelist(void)
 	printf("Generated gamelist.txt file\n");
  	exit(0);
 }
+static FILE *errorlog;
 
+
+
+void logflush(void)
+{
+	fflush(errorlog);
+}
+
+void logoutput(const char *text,...) 
+{
+    if (errorlog)
+    {
+        va_list arg;
+        va_start(arg,text);
+        vfprintf(errorlog,text,arg);
+        va_end(arg);
+    }
+}
 
 void parse_cmd(int argc, char *argv[], char *path)
 {
@@ -105,6 +123,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"sound", 0, &config_options.option_sound_enable, 1},
 		{"no-sound", 0, &config_options.option_sound_enable, 0},
 		{"samplerate", required_argument, 0, 'r'},
+		{"configfile", required_argument, 0, 'c'},
 		{"no-rescale", 0, &config_options.option_rescale, 0},
 		{"sw-rescale", 0, &config_options.option_rescale, 1},
 		{"hw-rescale", 0, &config_options.option_rescale, 2},
@@ -123,6 +142,10 @@ void parse_cmd(int argc, char *argv[], char *path)
 				if(strcmp(optarg, "22050") == 0) config_options.option_samplerate = 1;
 				if(strcmp(optarg, "44100") == 0) config_options.option_samplerate = 2;
 				break;
+                        case 'c':
+				if(!optarg) continue;
+                                strncpy(config_options.configfile, optarg, sizeof(config_options.configfile));
+                                break;
 			case 'l':
 			    //Generate full gamelist
 				generate_gamelist();		
@@ -133,25 +156,11 @@ void parse_cmd(int argc, char *argv[], char *path)
 	if(optind < argc) {
 		strcpy(path, argv[optind]);
 	}
+                logoutput("\nConfig = %s\n", config_options.configfile);
+
 }
 
-static FILE *errorlog;
 
-void logoutput(const char *text,...) 
-{
-    if (errorlog)
-    {
-        va_list arg;
-        va_start(arg,text);
-        vfprintf(errorlog,text,arg);
-        va_end(arg);
-    }
-}
-
-void logflush(void)
-{
-	fflush(errorlog);
-}
 
 /*
  * application main() 
@@ -159,7 +168,7 @@ void logflush(void)
 
 int main( int argc, char **argv )
 { 	
-	char path[MAX_PATH];
+    char path[MAX_PATH];
     char abspath[1000];
 
     //Set the directory to where the binary is
@@ -185,6 +194,7 @@ int main( int argc, char **argv )
 	config_options.option_rescale = 2;
 	config_options.option_samplerate = 2;
 	config_options.option_showfps = 0;
+	strncpy(config_options.configfile, "fba2x.cfg", sizeof(config_options.configfile));
 	config_options.option_display_border = 30;
 	parse_cmd(argc, argv,path);
 

@@ -43,7 +43,7 @@ static void open_config_file(void)
 	GError *error = NULL;
     
 	gkeyfile = g_key_file_new ();
-	if (!(int)g_key_file_load_from_file (gkeyfile, "fba2x.cfg", G_KEY_FILE_NONE, &error))
+	if (!(int)g_key_file_load_from_file (gkeyfile, config_options.configfile, G_KEY_FILE_NONE, &error))
 	{
 		gkeyfile=0;
 	}
