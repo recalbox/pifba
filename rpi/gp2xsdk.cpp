@@ -75,7 +75,7 @@ static Uint16 pi_joy[NUMKEYS];
 
 void pi_initialize_input()
 {
-    memset(joy_buttons, 0, 32*2);
+        memset(joy_buttons, 0, 32*2);
 	memset(joy_axes, 0, 8*2);
 	memset(pi_key, 0, NUMKEYS*2);
 	memset(pi_joy, 0, NUMKEYS*2);
@@ -119,6 +119,12 @@ void pi_initialize_input()
 	pi_joy[Y_1] = get_integer_conf("Joystick", "Y_1", RPI_JOY_Y);
 	pi_joy[L_1] = get_integer_conf("Joystick", "L_1", RPI_JOY_L);
 	pi_joy[R_1] = get_integer_conf("Joystick", "R_1", RPI_JOY_R);
+        
+	pi_joy[UP_1] = get_integer_conf("Joystick", "UP_1", RPI_JOY_UP);
+	pi_joy[DOWN_1] = get_integer_conf("Joystick", "DOWN_1", RPI_JOY_DOWN);
+	pi_joy[LEFT_1] = get_integer_conf("Joystick", "LEFT_1", RPI_JOY_LEFT);
+	pi_joy[RIGHT_1] = get_integer_conf("Joystick", "RIGHT_1", RPI_JOY_RIGHT);
+        
 	pi_joy[START_1] = get_integer_conf("Joystick", "START_1", RPI_JOY_START);
 	pi_joy[SELECT_1] = get_integer_conf("Joystick", "SELECT_1", RPI_JOY_SELECT);
 
@@ -128,9 +134,17 @@ void pi_initialize_input()
 	pi_joy[Y_2] = get_integer_conf("Joystick", "Y_2", RPI_JOY_Y);
 	pi_joy[L_2] = get_integer_conf("Joystick", "L_2", RPI_JOY_L);
 	pi_joy[R_2] = get_integer_conf("Joystick", "R_2", RPI_JOY_R);
+        
+	pi_joy[UP_2] = get_integer_conf("Joystick", "UP_2", RPI_JOY_UP);
+	pi_joy[DOWN_2] = get_integer_conf("Joystick", "DOWN_2", RPI_JOY_DOWN);
+	pi_joy[LEFT_2] = get_integer_conf("Joystick", "LEFT_2", RPI_JOY_LEFT);
+	pi_joy[RIGHT_2] = get_integer_conf("Joystick", "RIGHT_2", RPI_JOY_RIGHT);
+        
 	pi_joy[START_2] = get_integer_conf("Joystick", "START_2", RPI_JOY_START);
 	pi_joy[SELECT_2] = get_integer_conf("Joystick", "SELECT_2", RPI_JOY_SELECT);
     
+        pi_joy[HOTKEY] = get_integer_conf("Joystick", "HOTKEY", RPI_JOY_HOTKEY);
+
 	pi_joy[QUIT] = get_integer_conf("Joystick", "QUIT", RPI_JOY_QUIT);
 	pi_joy[ACCEL] = get_integer_conf("Joystick", "ACCEL", RPI_JOY_ACCEL);
     
@@ -621,10 +635,19 @@ unsigned long pi_joystick_read(int which1)
 		if (joy_buttons[0][pi_joy[A_1]])		val |= GP2X_A;
 		if (joy_buttons[0][pi_joy[START_1]])	val |= GP2X_START;
 		if (joy_buttons[0][pi_joy[SELECT_1]]) 	val |= GP2X_SELECT;
-		if (joy_axes[0][joyaxis_UD] == UP)          val |= GP2X_UP;
+
+                if (joy_buttons[0][pi_joy[UP_1]])		val |= GP2X_UP;
+	        if (joy_buttons[0][pi_joy[DOWN_1]]) 	val |= GP2X_DOWN;
+	        if (joy_buttons[0][pi_joy[LEFT_1]]) 	val |= GP2X_LEFT;
+	        if (joy_buttons[0][pi_joy[RIGHT_1]])	val |= GP2X_RIGHT;
+		
+                if (joy_axes[0][joyaxis_UD] == UP)          val |= GP2X_UP;
 		if (joy_axes[0][joyaxis_UD] == DOWN)        val |= GP2X_DOWN;
 		if (joy_axes[0][joyaxis_LR] == LEFT)        val |= GP2X_LEFT;
 		if (joy_axes[0][joyaxis_LR] == RIGHT)       val |= GP2X_RIGHT;
+                
+                if (joy_buttons[0][pi_joy[QUIT]] && joy_buttons[0][pi_joy[HOTKEY]])  GameLooping = 0;
+
 	} else {
 	    if (joy_buttons[1][pi_joy[L_2]])		val |= GP2X_L;
 		if (joy_buttons[1][pi_joy[R_2]])		val |= GP2X_R;
@@ -634,10 +657,16 @@ unsigned long pi_joystick_read(int which1)
 		if (joy_buttons[1][pi_joy[A_2]])		val |= GP2X_A;
 		if (joy_buttons[1][pi_joy[START_2]])	val |= GP2X_START;
 		if (joy_buttons[1][pi_joy[SELECT_2]]) 	val |= GP2X_SELECT;
+
+                if (joy_buttons[1][pi_joy[UP_2]])		val |= GP2X_UP;
+	        if (joy_buttons[1][pi_joy[DOWN_2]]) 	val |= GP2X_DOWN;
+	        if (joy_buttons[1][pi_joy[LEFT_2]]) 	val |= GP2X_LEFT;
+	        if (joy_buttons[1][pi_joy[RIGHT_2]])	val |= GP2X_RIGHT;
+		
 		if (joy_axes[1][joyaxis_UD_2] == UP)          val |= GP2X_UP;
 		if (joy_axes[1][joyaxis_UD_2] == DOWN)        val |= GP2X_DOWN;
 		if (joy_axes[1][joyaxis_LR_2] == LEFT)        val |= GP2X_LEFT;
-		if (joy_axes[1][joyaxis_LR_2] == RIGHT)       val |= GP2X_RIGHT;
+		if (joy_axes[1][joyaxis_LR_2] == RIGHT)       val |= GP2X_RIGHT;                
 	}
     
     if(sdl_keys)

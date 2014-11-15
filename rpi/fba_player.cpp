@@ -94,7 +94,7 @@ void do_keypad()
 		}
 	//sq	else
 	//sq		if (joy & GP2X_START && joy & GP2X_SELECT) P1P2Start = 1;
-		if ( joy & GP2X_START && joy & GP2X_SELECT) GameLooping = false;
+		//if ( joy & GP2X_START && joy & GP2X_SELECT) GameLooping = false;
 
 	}
     
