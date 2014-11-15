@@ -115,6 +115,31 @@ enum {
 #define LEFT_2 30
 #define RIGHT_2 31
 
+#define A_3 60
+#define B_3 61
+#define X_3 62
+#define Y_3 63
+#define L_3 64
+#define R_3 65
+#define START_3 66
+#define SELECT_3 67
+#define UP_3 68
+#define DOWN_3 69
+#define LEFT_3 70
+#define RIGHT_3 71
+#define A_4 72
+#define B_4 73
+#define X_4 74
+#define Y_4 75
+#define L_4 76
+#define R_4 77
+#define START_4 78
+#define SELECT_4 79
+#define UP_4 80
+#define DOWN_4 81
+#define LEFT_4 82
+#define RIGHT_4 83
+
 #define HOTKEY 40
 
 #define ACCEL 50
