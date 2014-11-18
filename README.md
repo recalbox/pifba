@@ -19,9 +19,12 @@ Dungeons and Dragons runs great with 3 buddies !
 ## Binary Install
 ```shell
 sudo apt-get install libasound2-dev
+mkdir pifba
+cd pifba
 wget https://github.com/digitalLumberjack/pifba/releases/download/0.1/pifba-0.1.zip
 unzip pifba-0.1.zip
 ```
+Then go to [Execution](#execution)
 
 ## Compilation
 
