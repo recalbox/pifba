@@ -16,6 +16,14 @@ I added few fixes :
 
 Dungeons and Dragons runs great with 3 buddies !
 
+## Binary Install
+```shell
+sudo apt-get install libasound2-dev
+wget https://github.com/digitalLumberjack/pifba/releases/download/0.1/pifba-0.1.zip
+unzip pifba-0.1.zip
+```
+
+## Compilation
 
 Make with :
 ```shell
@@ -27,6 +35,7 @@ make
 ```
 It will create the fba2x executable.
 
+## Execution
 Run with :
 ```shell
 ./fba2x /path/to/rom
