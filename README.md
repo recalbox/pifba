@@ -20,8 +20,12 @@ Dungeons and Dragons runs great with 3 buddies !
 Make with :
 ```shell
 sudo apt-get install libasound2-dev
+git clone https://github.com/digitalLumberjack/pifba
+cd pifba
+mkdir .obj
 make
 ```
+It will create the fba2x executable.
 
 Run with :
 ```shell
