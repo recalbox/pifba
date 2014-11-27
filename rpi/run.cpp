@@ -39,10 +39,18 @@ int RunReset()
     //Burn rotates vertical games internally and as we rotate the bitmap
     //after Burn has drawn it but before we draw to GLES we need to
     //swap the dimensions for our GLES initialisation.
-    if(BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)
-        pi_setvideo_mode(VideoBufferHeight, VideoBufferWidth);
+    int rotate = 0;
+    if(config_options.rotate == 1){
+        if(!(BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)) 
+            rotate = 1;
+    } else {
+        if(BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL) 
+            rotate = 1;
+    }
+    if(rotate == 1)
+        	pi_setvideo_mode(VideoBufferHeight, VideoBufferWidth);
     else
-        pi_setvideo_mode(VideoBufferWidth, VideoBufferHeight);
+	        pi_setvideo_mode(VideoBufferWidth, VideoBufferHeight);
     
 	nFramesEmulated = 0;
 	nCurrentFrame = 0;
@@ -146,11 +154,22 @@ int VideoInit()
     BurnVideoBufferAlloced = false;
     nBurnPitch  = VideoBufferWidth * 2;
     
-    if(BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL)
+    int rotate = 0;
+    if(config_options.rotate == 1){
+            if(!(BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL))
+		rotate = 1;
+    } else {
+            if((BurnDrvGetFlags() & BDF_ORIENTATION_VERTICAL))
+		rotate = 1;
+    }
+
+    if(rotate == 1)
     {
+        logoutput("Screen Rotate 90\n");
+
         BurnerVideoTrans = BurnerVideoRotate;
         BurnVideoBuffer = (unsigned short *)malloc( VideoBufferWidth * VideoBufferHeight * 2 );
-		BurnVideoBufferAlloced = true;
+	BurnVideoBufferAlloced = true;
         BurnVideoBufferSave = BurnVideoBuffer;
         PhysicalBufferWidth = VideoBufferHeight;
     }

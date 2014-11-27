@@ -224,6 +224,7 @@ void pi_parse_config_file (void)
     config_options.option_display_border = get_integer_conf("Graphics", "DisplayBorder", 0);
     config_options.display_effect = get_integer_conf("Graphics", "DisplayEffect", 0);
     config_options.maintain_aspect_ratio = get_integer_conf("Graphics", "MaintainAspectRatio", 1);
+    config_options.rotate = get_integer_conf("Graphics", "RotateScreen", 1);
 
     close_config_file();
 
