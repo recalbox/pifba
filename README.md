@@ -8,6 +8,7 @@ Look first a readme.txt or https://code.google.com/p/pifba/ for an introduction.
 - You can now specify a RotateScreen value in config files. If setted to 1, the screen rotate 90° clockwise.
 
 *Version 0.1 :*
+
 I added few fixes : 
 
 - You can now configure d-pad per button (in case sdl does not detect the hat on the controller) so it adds the ps3 d-pad control on all games
