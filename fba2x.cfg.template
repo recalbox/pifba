@@ -45,8 +45,8 @@ RIGHT_1=5
 UP_1=4
 DOWN_1=6
 #Joystick axis
-JA_LR=0
-JA_UD=1
+JA_LR_1=0
+JA_UD_1=1
 #player 2 button configuration
 A_2=15
 B_2=14

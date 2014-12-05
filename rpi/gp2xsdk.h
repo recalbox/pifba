@@ -89,7 +89,27 @@ enum {
 #define RPI_JOY_QSAVE   11
 #define RPI_JOY_HOTKEY  16
 
+#define RPI_JOY_AXIS_LR  1
+#define RPI_JOY_AXIS_UD  0
+
 // Key constants
+
+#define J_A 0
+#define J_B 1
+#define J_X 2
+#define J_Y 3
+#define J_L 4
+#define J_R 5
+#define J_START 6
+#define J_SELECT 7
+#define J_UP 8
+#define J_DOWN 9
+#define J_LEFT 10
+#define J_RIGHT 11
+
+#define J_AXIS_UD 12
+#define J_AXIS_LR 13
+
 #define A_1 0
 #define B_1 1
 #define X_1 2
@@ -102,6 +122,7 @@ enum {
 #define DOWN_1 9
 #define LEFT_1 10
 #define RIGHT_1 11
+
 #define A_2 20
 #define B_2 21
 #define X_2 22
@@ -127,6 +148,7 @@ enum {
 #define DOWN_3 69
 #define LEFT_3 70
 #define RIGHT_3 71
+
 #define A_4 72
 #define B_4 73
 #define X_4 74

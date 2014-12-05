@@ -31,8 +31,9 @@ static int surface_width;
 static int surface_height;
 
 unsigned char joy_buttons[4][32];
-unsigned char joy_axes[4][8];
+int joy_axes[4][8];
 
+int joy_indexes[4];
 int joyaxis_LR, joyaxis_UD;
 int joyaxis_LR_2, joyaxis_UD_2;
 int joyaxis_LR_3, joyaxis_UD_3;
@@ -73,15 +74,18 @@ static int get_integer_conf (const char *section, const char *option, int defval
 
 #define NUMKEYS 256
 static Uint16 pi_key[NUMKEYS];
-static Uint16 pi_joy[NUMKEYS];
+static Uint16 pi_joy[4][NUMKEYS];
+static int pi_axis[4][NUMKEYS];
+static Uint16 pi_specials[NUMKEYS];
 
 void pi_initialize_input()
 {
-        memset(joy_buttons, 0, 32*2);
-	memset(joy_axes, 0, 8*2);
+        memset(joy_buttons, 0, 32*4);
+	memset(joy_axes, 0, 8*4*sizeof(int));
 	memset(pi_key, 0, NUMKEYS*2);
-	memset(pi_joy, 0, NUMKEYS*2);
-    
+	memset(pi_joy, 0, NUMKEYS*2*4);
+    	memset(pi_axis, 0, NUMKEYS*4*sizeof(int));
+
 	//Open config file for reading below
 	open_config_file();
     
@@ -128,87 +132,79 @@ void pi_initialize_input()
 	pi_key[DOWN_2] = get_integer_conf("Keyboard", "DOWN_2", RPI_KEY_DOWN_2);
 	pi_key[QUIT] = get_integer_conf("Keyboard", "QUIT", RPI_KEY_QUIT);
         
+
 	//Configure joysticks from config file or defaults
-	pi_joy[A_1] = get_integer_conf("Joystick", "A_1", RPI_JOY_A);
-	pi_joy[B_1] = get_integer_conf("Joystick", "B_1", RPI_JOY_B);
-	pi_joy[X_1] = get_integer_conf("Joystick", "X_1", RPI_JOY_X);
-	pi_joy[Y_1] = get_integer_conf("Joystick", "Y_1", RPI_JOY_Y);
-	pi_joy[L_1] = get_integer_conf("Joystick", "L_1", RPI_JOY_L);
-	pi_joy[R_1] = get_integer_conf("Joystick", "R_1", RPI_JOY_R);
-        
-	pi_joy[UP_1] = get_integer_conf("Joystick", "UP_1", RPI_JOY_UP);
-	pi_joy[DOWN_1] = get_integer_conf("Joystick", "DOWN_1", RPI_JOY_DOWN);
-	pi_joy[LEFT_1] = get_integer_conf("Joystick", "LEFT_1", RPI_JOY_LEFT);
-	pi_joy[RIGHT_1] = get_integer_conf("Joystick", "RIGHT_1", RPI_JOY_RIGHT);
-        
-	pi_joy[START_1] = get_integer_conf("Joystick", "START_1", RPI_JOY_START);
-	pi_joy[SELECT_1] = get_integer_conf("Joystick", "SELECT_1", RPI_JOY_SELECT);
+        joy_indexes[0] = get_integer_conf("Joystick", "SDLID_1", -1);
+        joy_indexes[1] = get_integer_conf("Joystick", "SDLID_2", -1);
+        joy_indexes[2] = get_integer_conf("Joystick", "SDLID_3", -1);
+        joy_indexes[3] = get_integer_conf("Joystick", "SDLID_4", -1);
 
-	pi_joy[A_2] = get_integer_conf("Joystick", "A_2", RPI_JOY_A);
-	pi_joy[B_2] = get_integer_conf("Joystick", "B_2", RPI_JOY_B);
-	pi_joy[X_2] = get_integer_conf("Joystick", "X_2", RPI_JOY_X);
-	pi_joy[Y_2] = get_integer_conf("Joystick", "Y_2", RPI_JOY_Y);
-	pi_joy[L_2] = get_integer_conf("Joystick", "L_2", RPI_JOY_L);
-	pi_joy[R_2] = get_integer_conf("Joystick", "R_2", RPI_JOY_R);
-        
-	pi_joy[UP_2] = get_integer_conf("Joystick", "UP_2", RPI_JOY_UP);
-	pi_joy[DOWN_2] = get_integer_conf("Joystick", "DOWN_2", RPI_JOY_DOWN);
-	pi_joy[LEFT_2] = get_integer_conf("Joystick", "LEFT_2", RPI_JOY_LEFT);
-	pi_joy[RIGHT_2] = get_integer_conf("Joystick", "RIGHT_2", RPI_JOY_RIGHT);
-        
-	pi_joy[START_2] = get_integer_conf("Joystick", "START_2", RPI_JOY_START);
-	pi_joy[SELECT_2] = get_integer_conf("Joystick", "SELECT_2", RPI_JOY_SELECT);
+        char configName[10];
+        for (int player = 0; player<4; player++){
+            logoutput("Setting player %d input\n",player+1);
+
+            sprintf(configName, "A_%d", player+1);
+            pi_joy[player][J_A] = get_integer_conf("Joystick", configName, RPI_JOY_A);
+            logoutput("Setted J_A : %d\n", pi_joy[player][J_A]);
+
+            sprintf(configName, "B_%d", player+1);
+            pi_joy[player][J_B] = get_integer_conf("Joystick", configName, RPI_JOY_B);
+            sprintf(configName, "X_%d", player+1);
+            pi_joy[player][J_X] = get_integer_conf("Joystick", configName, RPI_JOY_X);
+            sprintf(configName, "Y_%d", player+1);
+            pi_joy[player][J_Y] = get_integer_conf("Joystick", configName, RPI_JOY_Y);
+            sprintf(configName, "L_%d", player+1);
+            pi_joy[player][J_L] = get_integer_conf("Joystick", configName, RPI_JOY_L);
+            sprintf(configName, "R_%d", player+1);
+            pi_joy[player][J_R] = get_integer_conf("Joystick", configName, RPI_JOY_R);
+
+            
+            sprintf(configName, "UP_%d", player+1);
+            pi_joy[player][J_UP] = get_integer_conf("Joystick", configName, RPI_JOY_UP);
+            
+            sprintf(configName, "DOWN_%d", player+1);
+            pi_joy[player][J_DOWN] = get_integer_conf("Joystick", configName, RPI_JOY_DOWN);
+            
+            sprintf(configName, "LEFT_%d", player+1);
+            pi_joy[player][J_LEFT] = get_integer_conf("Joystick", configName, RPI_JOY_LEFT);
+            
+            sprintf(configName, "RIGHT_%d", player+1);
+            pi_joy[player][J_RIGHT] = get_integer_conf("Joystick", configName, RPI_JOY_RIGHT);
+
+            
+            sprintf(configName, "START_%d", player+1);
+            pi_joy[player][J_START] = get_integer_conf("Joystick", configName, RPI_JOY_START);
+            
+            sprintf(configName, "SELECT_%d", player+1);
+            pi_joy[player][J_SELECT] = get_integer_conf("Joystick", configName, RPI_JOY_SELECT);
+            
+            sprintf(configName, "JA_LR_%d", player+1);
+            pi_axis[player][J_AXIS_LR] = get_integer_conf("Joystick", configName, RPI_JOY_AXIS_LR);
+            sprintf(configName, "JA_UD_%d", player+1);
+            pi_axis[player][J_AXIS_UD] = get_integer_conf("Joystick", configName, RPI_JOY_AXIS_UD);
+
+        }
     
-	pi_joy[A_3] = get_integer_conf("Joystick", "A_3", RPI_JOY_A);
-	pi_joy[B_3] = get_integer_conf("Joystick", "B_3", RPI_JOY_B);
-	pi_joy[X_3] = get_integer_conf("Joystick", "X_3", RPI_JOY_X);
-	pi_joy[Y_3] = get_integer_conf("Joystick", "Y_3", RPI_JOY_Y);
-	pi_joy[L_3] = get_integer_conf("Joystick", "L_3", RPI_JOY_L);
-	pi_joy[R_3] = get_integer_conf("Joystick", "R_3", RPI_JOY_R);
-        
-	pi_joy[UP_3] = get_integer_conf("Joystick", "UP_3", RPI_JOY_UP);
-	pi_joy[DOWN_3] = get_integer_conf("Joystick", "DOWN_3", RPI_JOY_DOWN);
-	pi_joy[LEFT_3] = get_integer_conf("Joystick", "LEFT_3", RPI_JOY_LEFT);
-	pi_joy[RIGHT_3] = get_integer_conf("Joystick", "RIGHT_3", RPI_JOY_RIGHT);
-        
-	pi_joy[START_3] = get_integer_conf("Joystick", "START_3", RPI_JOY_START);
-	pi_joy[SELECT_3] = get_integer_conf("Joystick", "SELECT_3", RPI_JOY_SELECT);
-        
-	pi_joy[A_4] = get_integer_conf("Joystick", "A_4", RPI_JOY_A);
-	pi_joy[B_4] = get_integer_conf("Joystick", "B_4", RPI_JOY_B);
-	pi_joy[X_4] = get_integer_conf("Joystick", "X_4", RPI_JOY_X);
-	pi_joy[Y_4] = get_integer_conf("Joystick", "Y_4", RPI_JOY_Y);
-	pi_joy[L_4] = get_integer_conf("Joystick", "L_4", RPI_JOY_L);
-	pi_joy[R_4] = get_integer_conf("Joystick", "R_4", RPI_JOY_R);
-        
-	pi_joy[UP_4] = get_integer_conf("Joystick", "UP_4", RPI_JOY_UP);
-	pi_joy[DOWN_4] = get_integer_conf("Joystick", "DOWN_4", RPI_JOY_DOWN);
-	pi_joy[LEFT_4] = get_integer_conf("Joystick", "LEFT_4", RPI_JOY_LEFT);
-	pi_joy[RIGHT_4] = get_integer_conf("Joystick", "RIGHT_4", RPI_JOY_RIGHT);
-        
-	pi_joy[START_4] = get_integer_conf("Joystick", "START_4", RPI_JOY_START);
-	pi_joy[SELECT_4] = get_integer_conf("Joystick", "SELECT_4", RPI_JOY_SELECT);
+        pi_specials[HOTKEY] = get_integer_conf("Joystick", "HOTKEY", RPI_JOY_HOTKEY);
+
+	pi_specials[QUIT] = get_integer_conf("Joystick", "QUIT", RPI_JOY_QUIT);
+	pi_specials[ACCEL] = get_integer_conf("Joystick", "ACCEL", RPI_JOY_ACCEL);
     
-        pi_joy[HOTKEY] = get_integer_conf("Joystick", "HOTKEY", RPI_JOY_HOTKEY);
+	pi_specials[QLOAD] = get_integer_conf("Joystick", "QLOAD", RPI_JOY_QLOAD);
+	pi_specials[QSAVE] = get_integer_conf("Joystick", "QSAVE", RPI_JOY_QSAVE);
 
-	pi_joy[QUIT] = get_integer_conf("Joystick", "QUIT", RPI_JOY_QUIT);
-	pi_joy[ACCEL] = get_integer_conf("Joystick", "ACCEL", RPI_JOY_ACCEL);
-    
-	pi_joy[QLOAD] = get_integer_conf("Joystick", "QLOAD", RPI_JOY_QLOAD);
-	pi_joy[QSAVE] = get_integer_conf("Joystick", "QSAVE", RPI_JOY_QSAVE);
-
-	//Read joystick axis to use, default to 0 & 1
-	joyaxis_LR = get_integer_conf("Joystick", "JA_LR", 0);
-	joyaxis_UD = get_integer_conf("Joystick", "JA_UD", 1);
-
-	joyaxis_LR_2 = get_integer_conf("Joystick", "JA_LR_2", 0);
-	joyaxis_UD_2 = get_integer_conf("Joystick", "JA_UD_2", 1);
-        
-	joyaxis_LR_3 = get_integer_conf("Joystick", "JA_LR_3", 0);
-	joyaxis_UD_3 = get_integer_conf("Joystick", "JA_UD_3", 1);
-        
-	joyaxis_LR_4 = get_integer_conf("Joystick", "JA_LR_4", 0);
-	joyaxis_UD_4 = get_integer_conf("Joystick", "JA_UD_4", 1);
+//	//Read joystick axis to use, default to 0 & 1
+//	joyaxis_LR = get_integer_conf("Joystick", "JA_LR_1", 0);
+//	joyaxis_UD = get_integer_conf("Joystick", "JA_UD_1", 1);
+//
+//	joyaxis_LR_2 = get_integer_conf("Joystick", "JA_LR_2", 0);
+//	joyaxis_UD_2 = get_integer_conf("Joystick", "JA_UD_2", 1);
+//        
+//	joyaxis_LR_3 = get_integer_conf("Joystick", "JA_LR_3", 0);
+//	joyaxis_UD_3 = get_integer_conf("Joystick", "JA_UD_3", 1);
+//        
+//	joyaxis_LR_4 = get_integer_conf("Joystick", "JA_LR_4", 0);
+//	joyaxis_UD_4 = get_integer_conf("Joystick", "JA_UD_4", 1);
 
 	close_config_file();
     
@@ -235,14 +231,14 @@ void pi_initialize()
 {
 
     pi_initialize_input();
-	pi_parse_config_file();
+    pi_parse_config_file();
     
     init_SDL();
     
     //Initialise display just for the rom loading screen first.
     pi_setvideo_mode(320,240);
     pi_video_flip();
-	
+    
 }
 
 void pi_terminate(void)
@@ -304,27 +300,76 @@ int init_SDL(void)
 	//We handle up to four joysticks
 	if(SDL_NumJoysticks())
 	{
-		int i;
-    	SDL_JoystickEventState(SDL_ENABLE);
-		
-		for(i=0;i<SDL_NumJoysticks();i++) {
-			joys[i]=SDL_JoystickOpen(i);
-            
+		int joystickIndex;
+                int configuratedJoysticks[4] = {-1,-1,-1,-1};
+                SDL_JoystickEventState(SDL_ENABLE);
+                
+                // Try to configure joysticks from config indexes
+                for(int player = 0; player< 4; player++){
+                    joystickIndex = joy_indexes[player];
+                    if(joystickIndex >= 0){
+                        if(SDL_NumJoysticks() > joystickIndex){
+                            SDL_Joystick* joystick  = SDL_JoystickOpen(joystickIndex);
+                            //Check for valid joystick, some keyboards
+                            //aren't SDL compatible
+                            if(joystick)
+                            {
+                                    if (SDL_JoystickNumAxes(myjoy[joystickIndex]) > 6)
+                                    {
+                                            SDL_JoystickClose(myjoy[joystickIndex]);
+                                            joystick=0;
+                                            logoutput("Error detected invalid joystick/keyboard\n");
+                                            break;
+                                    }
+                            }
+                            configuratedJoysticks[player] = joystickIndex;
+                            joys[player] = joystick;
+                            logoutput("Configured joystick %s at %d for player %d\n", SDL_JoystickName(joystickIndex), SDL_JoystickIndex(joystick), player+1);
+                            joyCount++;
+                        }
+                    }
+                }
+       
+                // Finish configuration
+                for(joystickIndex=0;joystickIndex<SDL_NumJoysticks();joystickIndex++) {
+                    // If already configured skip
+                    bool alreadyConfig = false;
+                    for(int player = 0; player< 4; player++){ 
+                        logoutput("Checking if joystick at %d is configured for player %d : %d\n", joystickIndex,player ,configuratedJoysticks[player]);
+
+                        if(configuratedJoysticks[player] == joystickIndex){
+                            alreadyConfig = true;
+                            break;
+                        }
+                    }
+                    if(alreadyConfig) continue;
+                    SDL_Joystick* joystick  = SDL_JoystickOpen(joystickIndex);
 			//Check for valid joystick, some keyboards
 			//aren't SDL compatible
-			if(joys[i])
+			if(joystick)
 			{
-				if (SDL_JoystickNumAxes(myjoy[i]) > 6)
-				{
-					SDL_JoystickClose(myjoy[i]);
-					joys[i]=0;
-					logoutput("Error detected invalid joystick/keyboard\n");
-					break;
-				}
-				else
-					joyCount++;
+                            if (SDL_JoystickNumAxes(myjoy[joystickIndex]) > 6)
+                            {
+                                    SDL_JoystickClose(myjoy[joystickIndex]);
+                                    joystick=0;
+                                    logoutput("Error detected invalid joystick/keyboard\n");
+                                    break;
+                            }
+                            // Set the first free joystick
+                            for(int player = 0; player< 4; player++){ 
+                                if(configuratedJoysticks[player] == -1){
+                                    joy_indexes[player] = joystickIndex;
+                                    joys[player] = joystick;
+                                    configuratedJoysticks[player] = joystickIndex;
+                                    logoutput("Default Configured joystick at %d for player %d\n", joystickIndex ,player+1);
+                                    joyCount++;
+                                    break;
+                                }
+                            }
 			}
-		}
+                        
+                    }
+		
 		if(joys[0])
 			logoutput("Found %d joysticks\n",joyCount);
 	}
@@ -343,8 +388,8 @@ int init_SDL(void)
     //Initialise dispmanx
     bcm_host_init();
     
-	//Clean exits, hopefully!
-	atexit(exitfunc);
+    //Clean exits, hopefully!
+    atexit(exitfunc);
     
     return(1);
 }
@@ -573,63 +618,64 @@ void pi_process_events (void)
                 joy_buttons[event.jbutton.which][event.jbutton.button] = 0;
                 break;
 
-            case SDL_JOYAXISMOTION:
-				if(event.jaxis.axis == joyaxis_LR) {
-					if(event.jaxis.value > -10000 && event.jaxis.value < 10000)
-						joy_axes[event.jbutton.which][joyaxis_LR] = CENTER;
-					else if(event.jaxis.value > 10000)
-						joy_axes[event.jbutton.which][joyaxis_LR] = RIGHT;
-					else
-						joy_axes[event.jbutton.which][joyaxis_LR] = LEFT;
-				}
-				if(event.jaxis.axis == joyaxis_UD) {
-   					if(event.jaxis.value > -10000 && event.jaxis.value < 10000)
-						joy_axes[event.jbutton.which][joyaxis_UD] = CENTER;
-					else if(event.jaxis.value > 10000)
-						joy_axes[event.jbutton.which][joyaxis_UD] = DOWN;
-					else
-						joy_axes[event.jbutton.which][joyaxis_UD] = UP;
-				}
-                break;
+                case SDL_JOYAXISMOTION:
+                     joy_axes[event.jaxis.which][event.jaxis.axis] = event.jaxis.value;
+//                    if(event.jaxis.axis == joyaxis_LR) {
+//                            if(event.jaxis.value > -10000 && event.jaxis.value < 10000)
+//                                    joy_axes[event.jbutton.which][joyaxis_LR] = CENTER;
+//                            else if(event.jaxis.value > 10000)
+//                                    joy_axes[event.jbutton.which][joyaxis_LR] = RIGHT;
+//                            else
+//                                    joy_axes[event.jbutton.which][joyaxis_LR] = LEFT;
+//                    }
+//                    if(event.jaxis.axis == joyaxis_UD) {
+//                            if(event.jaxis.value > -10000 && event.jaxis.value < 10000)
+//                                    joy_axes[event.jbutton.which][joyaxis_UD] = CENTER;
+//                            else if(event.jaxis.value > 10000)
+//                                    joy_axes[event.jbutton.which][joyaxis_UD] = DOWN;
+//                            else
+//                                    joy_axes[event.jbutton.which][joyaxis_UD] = UP;
+//                    }
+                    break;
 
-			case SDL_JOYHATMOTION:
+                case SDL_JOYHATMOTION:
                   switch(event.jhat.value) {
-                  case SDL_HAT_CENTERED:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = CENTER;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = CENTER;
-                    break;
-                  case SDL_HAT_UP:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = CENTER;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = UP;
-                    break;
-                  case SDL_HAT_DOWN:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = CENTER;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = DOWN;
-                    break;
-                  case SDL_HAT_LEFT:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = LEFT;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = CENTER;
-                    break;
-                  case SDL_HAT_RIGHT:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = RIGHT;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = CENTER;
-                    break;
-                  case SDL_HAT_RIGHTUP:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = RIGHT;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = UP;
-                    break;
-                  case SDL_HAT_LEFTUP:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = LEFT;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = UP;
-                    break;
-                  case SDL_HAT_RIGHTDOWN:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = RIGHT;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = DOWN;
-                    break;
-                  case SDL_HAT_LEFTDOWN:
-                    joy_axes[event.jaxis.which][joyaxis_LR] = LEFT;
-                    joy_axes[event.jaxis.which][joyaxis_UD] = DOWN;
-                    break;
+                    joy_axes[event.jaxis.which][event.jaxis.axis] = event.jaxis.value;
+//                  case SDL_HAT_CENTERED:
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = CENTER;
+//                    break;
+//                  case SDL_HAT_UP:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = CENTER;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = UP;
+//                    break;
+//                  case SDL_HAT_DOWN:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = CENTER;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = DOWN;
+//                    break;
+//                  case SDL_HAT_LEFT:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = LEFT;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = CENTER;
+//                    break;
+//                  case SDL_HAT_RIGHT:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = RIGHT;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = CENTER;
+//                    break;
+//                  case SDL_HAT_RIGHTUP:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = RIGHT;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = UP;
+//                    break;
+//                  case SDL_HAT_LEFTUP:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = LEFT;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = UP;
+//                    break;
+//                  case SDL_HAT_RIGHTDOWN:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = RIGHT;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = DOWN;
+//                    break;
+//                  case SDL_HAT_LEFTDOWN:
+//                    joy_axes[event.jaxis.which][joyaxis_LR] = LEFT;
+//                    joy_axes[event.jaxis.which][joyaxis_UD] = DOWN;
+//                    break;
                   }
 
             case SDL_KEYDOWN:
@@ -671,6 +717,7 @@ void pi_process_events (void)
 }
 
 extern bool GameLooping;
+int joyvalue = 0;
 
 unsigned long pi_joystick_read(int which1)
 {
@@ -680,48 +727,38 @@ unsigned long pi_joystick_read(int which1)
 	//if(which1 > 1) return val;
     
 	//if (which1 == 0) {
-	    if (joy_buttons[which1][pi_joy[L_1]])		val |= GP2X_L;
-		if (joy_buttons[which1][pi_joy[R_1]])		val |= GP2X_R;
-		if (joy_buttons[which1][pi_joy[X_1]])		val |= GP2X_X;
-		if (joy_buttons[which1][pi_joy[Y_1]])		val |= GP2X_Y;
-		if (joy_buttons[which1][pi_joy[B_1]])		val |= GP2X_B;
-		if (joy_buttons[which1][pi_joy[A_1]])		val |= GP2X_A;
-		if (joy_buttons[which1][pi_joy[START_1]])	val |= GP2X_START;
-		if (joy_buttons[which1][pi_joy[SELECT_1]]) 	val |= GP2X_SELECT;
+        int playerjoyindex = joy_indexes[which1];
+        if(playerjoyindex != -1){
+                if (joy_buttons[playerjoyindex][pi_joy[which1][J_L]])		val |= GP2X_L;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_R]])		val |= GP2X_R;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_X]])		val |= GP2X_X;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_Y]])		val |= GP2X_Y;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_B]])		val |= GP2X_B;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_A]])		val |= GP2X_A;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_START]])	val |= GP2X_START;
+		if (joy_buttons[playerjoyindex][pi_joy[which1][J_SELECT]]) 	val |= GP2X_SELECT;
 
-                if (joy_buttons[which1][pi_joy[UP_1]])		val |= GP2X_UP;
-	        if (joy_buttons[which1][pi_joy[DOWN_1]]) 	val |= GP2X_DOWN;
-	        if (joy_buttons[which1][pi_joy[LEFT_1]]) 	val |= GP2X_LEFT;
-	        if (joy_buttons[which1][pi_joy[RIGHT_1]])	val |= GP2X_RIGHT;
-		
-                if (joy_axes[which1][joyaxis_UD] == UP)          val |= GP2X_UP;
-		if (joy_axes[which1][joyaxis_UD] == DOWN)        val |= GP2X_DOWN;
-		if (joy_axes[which1][joyaxis_LR] == LEFT)        val |= GP2X_LEFT;
-		if (joy_axes[which1][joyaxis_LR] == RIGHT)       val |= GP2X_RIGHT;
-                
-                if (joy_buttons[which1][pi_joy[QUIT]] && joy_buttons[which1][pi_joy[HOTKEY]])  GameLooping = 0;
-
-	/*} else {
-	    if (joy_buttons[1][pi_joy[L_2]])		val |= GP2X_L;
-		if (joy_buttons[1][pi_joy[R_2]])		val |= GP2X_R;
-		if (joy_buttons[1][pi_joy[X_2]])		val |= GP2X_X;
-		if (joy_buttons[1][pi_joy[Y_2]])		val |= GP2X_Y;
-		if (joy_buttons[1][pi_joy[B_2]])		val |= GP2X_B;
-		if (joy_buttons[1][pi_joy[A_2]])		val |= GP2X_A;
-		if (joy_buttons[1][pi_joy[START_2]])	val |= GP2X_START;
-		if (joy_buttons[1][pi_joy[SELECT_2]]) 	val |= GP2X_SELECT;
-
-                if (joy_buttons[1][pi_joy[UP_2]])		val |= GP2X_UP;
-	        if (joy_buttons[1][pi_joy[DOWN_2]]) 	val |= GP2X_DOWN;
-	        if (joy_buttons[1][pi_joy[LEFT_2]]) 	val |= GP2X_LEFT;
-	        if (joy_buttons[1][pi_joy[RIGHT_2]])	val |= GP2X_RIGHT;
-		
-		if (joy_axes[1][joyaxis_UD_2] == UP)          val |= GP2X_UP;
-		if (joy_axes[1][joyaxis_UD_2] == DOWN)        val |= GP2X_DOWN;
-		if (joy_axes[1][joyaxis_LR_2] == LEFT)        val |= GP2X_LEFT;
-		if (joy_axes[1][joyaxis_LR_2] == RIGHT)       val |= GP2X_RIGHT;                
-	}*/
+                if (joy_buttons[playerjoyindex][pi_joy[which1][J_UP]])		val |= GP2X_UP;
+	        if (joy_buttons[playerjoyindex][pi_joy[which1][J_DOWN]]) 	val |= GP2X_DOWN;
+	        if (joy_buttons[playerjoyindex][pi_joy[which1][J_LEFT]]) 	val |= GP2X_LEFT;
+	        if (joy_buttons[playerjoyindex][pi_joy[which1][J_RIGHT]])	val |= GP2X_RIGHT;
     
+                joyvalue = joy_axes[playerjoyindex][pi_axis[which1][J_AXIS_LR]];
+                
+                if(joyvalue > 10000)
+                        val |= GP2X_RIGHT;
+                else if (joyvalue < -10000)
+                        val |= GP2X_LEFT;
+                
+                joyvalue = joy_axes[playerjoyindex][pi_axis[which1][J_AXIS_UD]];
+                if(joyvalue > 10000)
+                        val |= GP2X_DOWN;
+                else if (joyvalue < -10000)
+                        val |= GP2X_UP; 
+                
+                if (joy_buttons[playerjoyindex][pi_specials[QUIT]] && joy_buttons[playerjoyindex][pi_specials[HOTKEY]])  GameLooping = 0;
+        }
+
     if(sdl_keys)
     {
 		if(which1 == 0) {
