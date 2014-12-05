@@ -6,7 +6,7 @@ Look first a readme.txt or https://code.google.com/p/pifba/ for an introduction.
 
 *Version 0.3 :*
 - You can now force joystick index for a player with the configuration line SDLID_[PLAYER]=-1
-  For example, if you have 3 joysticks on the system (0,1 and 2), the default config will take the 0 for player1, 1 fro player 2 etc. Change the line SDLID\_1=-1 to SDLID\_1=1 and your first first player will be controlled by the second joystick on the system.
+  For example, if you have 3 joysticks on the system (0,1 and 2), the default config will take the first joystick (0) for player1, the second (1) for player 2 etc. Change the line SDLID\_1=-1 to SDLID\_1=1 and your first first player will be controlled by the second joystick on the system.
 
 *Version 0.2 :*
 - You can now specify a RotateScreen value in config files. If setted to 1, the screen rotate 90° clockwise.
