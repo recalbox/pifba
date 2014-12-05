@@ -32,6 +32,7 @@ DOWN_2=999
 # from package "joystick"
 HOTKEY=16
 QUIT=0
+SDLID_1=-1
 A_1=15
 B_1=14
 X_1=12
@@ -48,6 +49,7 @@ DOWN_1=6
 JA_LR_1=0
 JA_UD_1=1
 #player 2 button configuration
+SDLID_2=-1
 A_2=15
 B_2=14
 X_2=12
@@ -64,6 +66,7 @@ DOWN_2=6
 JA_LR_2=0
 JA_UD_2=1
 #player 3 button configuration
+SDLID_3=-1
 A_3=15
 B_3=14
 X_3=12
@@ -80,6 +83,7 @@ DOWN_3=6
 JA_LR_3=0
 JA_UD_3=1
 #player 4 button configuration
+SDLID_4=-1
 A_4=15
 B_4=14
 X_4=12
