@@ -4,6 +4,10 @@ Based on Squid pifba
 
 Look first a readme.txt or https://code.google.com/p/pifba/ for an introduction.
 
+*Version 0.3 :*
+- You can now force joystick index for a player with the configuration line SDLID_[PLAYER]=-1
+  For example, if you have 3 joysticks on the system (0,1 and 2), the default config will take the first joystick (0) for player1, the second (1) for player 2 etc. Change the line SDLID\_1=-1 to SDLID\_1=1 and your first first player will be controlled by the second joystick on the system.
+
 *Version 0.2 :*
 - You can now specify a RotateScreen value in config files. If setted to 1, the screen rotate 90° clockwise.
 
@@ -26,8 +30,8 @@ Dungeons and Dragons runs great with 3 buddies !
 sudo apt-get install libasound2-dev
 mkdir pifba
 cd pifba
-wget https://github.com/digitalLumberjack/pifba/releases/download/0.1/pifba-0.1.zip
-unzip pifba-0.1.zip
+wget https://github.com/digitalLumberjack/pifba/releases/download/0.3/pifba-0.3.zip
+unzip pifba-0.3.zip
 ```
 Then go to [Execution](#execution)
 
