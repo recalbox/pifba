@@ -144,7 +144,7 @@ void pi_initialize_input()
             logoutput("Setting player %d input\n",player+1);
 
             sprintf(configName, "A_%d", player+1);
-            pi_joy[player][J_A] = get_integer_conf("Joystick", configName, RPI_JOY_A);
+            pi_joy[player][J_A] = get_integer_conf("Joystick", configName, 200);
             logoutput("Setted J_A : %d\n", pi_joy[player][J_A]);
 
             sprintf(configName, "B_%d", player+1);
