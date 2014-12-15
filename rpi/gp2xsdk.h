@@ -89,8 +89,8 @@ enum {
 #define RPI_JOY_QSAVE   -1
 #define RPI_JOY_HOTKEY  -1
 
-#define RPI_JOY_AXIS_LR  1
-#define RPI_JOY_AXIS_UD  0
+#define RPI_JOY_AXIS_LR  0
+#define RPI_JOY_AXIS_UD  1
 
 // Key constants
 
