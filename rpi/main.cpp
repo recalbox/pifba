@@ -185,6 +185,8 @@ int main( int argc, char **argv )
 		printf ("  --gamelist        generate a gamelist.txt with all supported games\n");
 		printf ("  --showfps         show FPS during the game\n");
 		printf ("  --no-sound        disable sound\n");
+		printf ("  --configfile      set config file\n");
+
 		printf ("\n");
 		return 0;
 	}
