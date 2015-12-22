@@ -13,6 +13,7 @@ typedef struct
 	int display_effect;
 	int maintain_aspect_ratio;
 	char configfile[1024];
+	char logfile[1024];
 	int rotate;
 } CFG_OPTIONS;
 
