@@ -31,6 +31,7 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <pwd.h>
 
 #include "main.h"
 #include "fba_player.h"
@@ -124,6 +125,7 @@ void parse_cmd(int argc, char *argv[], char *path)
 		{"no-sound", 0, &config_options.option_sound_enable, 0},
 		{"samplerate", required_argument, 0, 'r'},
 		{"configfile", required_argument, 0, 'c'},
+		{"logfile", required_argument, 0, 'm'},
 		{"no-rescale", 0, &config_options.option_rescale, 0},
 		{"sw-rescale", 0, &config_options.option_rescale, 1},
 		{"hw-rescale", 0, &config_options.option_rescale, 2},
@@ -142,6 +144,10 @@ void parse_cmd(int argc, char *argv[], char *path)
 				if(strcmp(optarg, "22050") == 0) config_options.option_samplerate = 1;
 				if(strcmp(optarg, "44100") == 0) config_options.option_samplerate = 2;
 				break;
+                        case 'm':
+				if(!optarg) continue;
+                                strncpy(config_options.logfile, optarg, sizeof(config_options.logfile));
+                                break;
                         case 'c':
 				if(!optarg) continue;
                                 strncpy(config_options.configfile, optarg, sizeof(config_options.configfile));
@@ -156,8 +162,6 @@ void parse_cmd(int argc, char *argv[], char *path)
 	if(optind < argc) {
 		strcpy(path, argv[optind]);
 	}
-                logoutput("\nConfig = %s\n", config_options.configfile);
-
 }
 
 
@@ -170,14 +174,13 @@ int main( int argc, char **argv )
 { 	
     char path[MAX_PATH];
     char abspath[1000];
+    const char *homedir;
 
-    //Set the directory to where the binary is
-    realpath(argv[0], abspath);
-    char *dirsep = strrchr(abspath, '/');
-    if( dirsep != 0 ) *dirsep = 0;
-    chdir(abspath);
-
-	errorlog = fopen("output.log","wa");
+    if ((homedir = getenv("HOME")) == NULL) {
+        homedir = getpwuid(getuid())->pw_dir;
+    }
+    //Set the directory to home
+    chdir(homedir);
 
 	if (argc < 2)
 	{
@@ -186,6 +189,7 @@ int main( int argc, char **argv )
 		printf ("  --showfps         show FPS during the game\n");
 		printf ("  --no-sound        disable sound\n");
 		printf ("  --configfile      set config file\n");
+		printf ("  --logfile         set log file\n");
 
 		printf ("\n");
 		return 0;
@@ -197,9 +201,12 @@ int main( int argc, char **argv )
 	config_options.option_samplerate = 2;
 	config_options.option_showfps = 0;
 	strncpy(config_options.configfile, "fba2x.cfg", sizeof(config_options.configfile));
+	strncpy(config_options.logfile, "fba2x.log", sizeof(config_options.logfile));
 	config_options.option_display_border = 30;
 	parse_cmd(argc, argv,path);
 
+	
+	errorlog = fopen(config_options.logfile,"wa");
 	//Make sure directory exists
 	mkdir("saves", 0777);
 
